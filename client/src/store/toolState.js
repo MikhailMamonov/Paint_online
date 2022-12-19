@@ -22,10 +22,6 @@ class ToolState {
   setLineWidth(color) {
     this.tool.changeLineWidth = color;
   }
-
-  subtract() {
-    this.count -= 1;
-  }
 }
 
 export default new ToolState();

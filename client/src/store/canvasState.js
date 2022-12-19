@@ -2,6 +2,7 @@ import { makeAutoObservable } from 'mobx';
 
 class CanvasState {
   canvas = null;
+  ctx = null;
   socket = null;
   sessionId = null;
   undoList = [];
@@ -12,12 +13,9 @@ class CanvasState {
     makeAutoObservable(this);
   }
 
-  get() {
-    return this.count < 0 ? 'Yes' : 'No';
-  }
-
   setCanvas(canvas) {
     this.canvas = canvas;
+    this.ctx = canvas.getContext('2d');
   }
 
   setSocket(socket) {
@@ -41,31 +39,29 @@ class CanvasState {
   }
 
   undo() {
-    let ctx = this.canvas.getContext('2d');
     if (this.undoList.length > 0) {
       const dataUrl = this.undoList.pop();
       const img = new Image();
       img.src = dataUrl;
       this.pushToRedo(this.canvas.toDataURL());
       img.onload = () => {
-        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        ctx.drawImage(img, 0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.drawImage(img, 0, 0, this.canvas.width, this.canvas.height);
       };
     } else {
-      ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
   }
 
   redo() {
-    let ctx = this.canvas.getContext('2d');
     if (this.redoList.length > 0) {
       const dataUrl = this.redoList.pop();
       const img = new Image();
       img.src = dataUrl;
       this.pushToUndo(this.canvas.toDataURL());
       img.onload = () => {
-        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        ctx.drawImage(img, 0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.drawImage(img, 0, 0, this.canvas.width, this.canvas.height);
       };
     }
   }

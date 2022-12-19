@@ -15,6 +15,21 @@ export default class Line extends Tool {
 
   mouseUpHandler(e) {
     this.mouseDown = false;
+    this.socket.send(
+      JSON.stringify({
+        method: 'draw',
+        id: this.sessionId,
+        figure: {
+          type: 'line',
+          x: e.pageX - e.target.offsetLeft,
+          y: e.pageY - e.target.offsetTop,
+          currentX: this.currentX,
+          currentY: this.currentY,
+          strokeColor: this.ctx.strokeStyle,
+          lineWidth: this.ctx.lineWidth,
+        },
+      })
+    );
   }
 
   mouseMoveHandler(e) {
@@ -43,5 +58,14 @@ export default class Line extends Tool {
       this.ctx.fill();
       this.ctx.stroke();
     };
+  }
+
+  static staticDraw(ctx, x, y, currentX, currentY, strokeColor, lineWidth) {
+    ctx.strokeStyle = strokeColor;
+    ctx.lineWidth = lineWidth;
+    ctx.moveTo(currentX, currentY);
+    ctx.lineTo(x, y);
+    ctx.fill();
+    ctx.stroke();
   }
 }

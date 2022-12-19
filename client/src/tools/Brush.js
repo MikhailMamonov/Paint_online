@@ -28,7 +28,6 @@ export default class Brush extends Tool {
 
   mouseMoveHandler(e) {
     if (this.mouseDown) {
-      //this.draw(e.pageX - e.target.offsetLeft, e.pageY - e.target.offsetTop);
       this.socket.send(
         JSON.stringify({
           id: this.sessionId,

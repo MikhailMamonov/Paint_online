@@ -10,6 +10,9 @@ import Button from 'react-bootstrap/Button';
 import { useParams } from 'react-router-dom';
 import Rect from '../tools/Rect';
 import axios from 'axios';
+import Circle from '../tools/Circle';
+import Line from '../tools/Line';
+import Eraser from '../tools/Eraser';
 
 const Canvas = observer(() => {
   const canvasRef = useRef();
@@ -54,13 +57,14 @@ const Canvas = observer(() => {
 
       socket.onmessage = (e) => {
         const msg = JSON.parse(e.data);
-        // eslint-disable-next-line default-case
         switch (msg.method) {
           case 'connection':
             console.log(`Пользователь ${msg.username} вошепл в систему`);
             break;
           case 'draw':
             drawHandler(msg);
+            break;
+          default:
             break;
         }
       };
@@ -96,16 +100,42 @@ const Canvas = observer(() => {
         );
         ctx.beginPath();
         break;
-
+      case 'circle':
+        Circle.staticDraw(
+          ctx,
+          figure.x,
+          figure.y,
+          figure.radius,
+          figure.color,
+          figure.strokeColor,
+          figure.lineWidth
+        );
+        ctx.beginPath();
+        break;
+      case 'line':
+        Line.staticDraw(
+          ctx,
+          figure.x,
+          figure.y,
+          figure.currentX,
+          figure.currentY,
+          figure.strokeColor,
+          figure.lineWidth
+        );
+        ctx.beginPath();
+        break;
+      case 'eraser':
+        Eraser.draw(ctx, figure.x, figure.y, figure.lineWidth);
+        break;
       default:
         break;
     }
   };
-  const onMouseDownHandler = (e) => {
+  const onMouseDownHandler = () => {
     canvasState.pushToUndo(canvasRef.current.toDataURL());
   };
 
-  const onMouseUpHandler = (e) => {
+  const onMouseUpHandler = () => {
     axios
       .post(`http://localhost:5000/image?id=${params.id}`, {
         img: canvasRef.current.toDataURL(),
