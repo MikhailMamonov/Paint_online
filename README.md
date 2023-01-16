@@ -7,7 +7,7 @@ In server directory, you can run:
 ### `npm run dev`
 
 Runs the app in the development mode.\
-Server started on [http://localhost:5000](http://localhost:5000).
+Server default started on [http://localhost:5000](http://localhost:5000).
 
 ### `npm run test`
 

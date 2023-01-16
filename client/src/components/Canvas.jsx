@@ -1,18 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import './../styles/canvas.scss';
-import { observer } from 'mobx-react-lite';
-import { useRef } from 'react';
-import canvasState from '../store/canvasState';
-import toolState from '../store/toolState';
-import Brush from '../tools/Brush';
-import Modal from 'react-bootstrap/Modal';
-import Button from 'react-bootstrap/Button';
-import { useParams } from 'react-router-dom';
-import Rect from '../tools/Rect';
-import axios from 'axios';
-import Circle from '../tools/Circle';
-import Line from '../tools/Line';
-import Eraser from '../tools/Eraser';
+import React, { useEffect, useState } from "react";
+import "./../styles/canvas.scss";
+import { observer } from "mobx-react-lite";
+import { useRef } from "react";
+import canvasState from "../store/canvasState";
+import toolState from "../store/toolState";
+import Brush from "../tools/Brush";
+import Modal from "react-bootstrap/Modal";
+import Button from "react-bootstrap/Button";
+import { useParams } from "react-router-dom";
+import Rect from "../tools/Rect";
+import axios from "axios";
+import Circle from "../tools/Circle";
+import Line from "../tools/Line";
+import Eraser from "../tools/Eraser";
 
 const Canvas = observer(() => {
   const canvasRef = useRef();
@@ -21,36 +21,43 @@ const Canvas = observer(() => {
   const params = useParams();
   useEffect(() => {
     canvasState.setCanvas(canvasRef.current);
-    let ctx = canvasRef.current.getContext('2d');
-    axios.get(`http://localhost:5000/image?id=${params.id}`).then((res) => {
-      const img = new Image();
-      img.src = res.data;
-      img.onload = () => {
-        ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-        ctx.drawImage(
-          img,
-          0,
-          0,
-          canvasRef.current.width,
-          canvasRef.current.height
-        );
-      };
-    });
+    let ctx = canvasRef.current.getContext("2d");
+    axios
+      .get(`http://localhost:${process.env.PORT}/image?id=${params.id}`)
+      .then((res) => {
+        const img = new Image();
+        img.src = res.data;
+        img.onload = () => {
+          ctx.clearRect(
+            0,
+            0,
+            canvasRef.current.width,
+            canvasRef.current.height
+          );
+          ctx.drawImage(
+            img,
+            0,
+            0,
+            canvasRef.current.width,
+            canvasRef.current.height
+          );
+        };
+      });
   }, []);
 
   useEffect(() => {
     if (canvasState.username) {
-      const socket = new WebSocket('ws://localhost:5000/');
+      const socket = new WebSocket(`ws://localhost:${process.env.PORT}/`);
       canvasState.setSocket(socket);
       canvasState.setSessionId(params.id);
       toolState.setTool(new Brush(canvasRef.current, socket, params.id));
       socket.onopen = () => {
-        console.log('Connection is established');
+        console.log("Connection is established");
         socket.send(
           JSON.stringify({
             id: params.id,
             username: canvasState.username,
-            method: 'connection',
+            method: "connection",
           })
         );
       };
@@ -58,10 +65,10 @@ const Canvas = observer(() => {
       socket.onmessage = (e) => {
         const msg = JSON.parse(e.data);
         switch (msg.method) {
-          case 'connection':
+          case "connection":
             console.log(`Пользователь ${msg.username} вошепл в систему`);
             break;
-          case 'draw':
+          case "draw":
             drawHandler(msg);
             break;
           default:
@@ -73,9 +80,9 @@ const Canvas = observer(() => {
 
   const drawHandler = (msg) => {
     const figure = msg.figure;
-    const ctx = canvasRef.current.getContext('2d');
+    const ctx = canvasRef.current.getContext("2d");
     switch (figure.type) {
-      case 'brush':
+      case "brush":
         Brush.draw(
           ctx,
           figure.x,
@@ -84,10 +91,10 @@ const Canvas = observer(() => {
           figure.lineWidth
         );
         break;
-      case 'finish':
+      case "finish":
         ctx.beginPath();
         break;
-      case 'rect':
+      case "rect":
         Rect.staticDraw(
           ctx,
           figure.x,
@@ -100,7 +107,7 @@ const Canvas = observer(() => {
         );
         ctx.beginPath();
         break;
-      case 'circle':
+      case "circle":
         Circle.staticDraw(
           ctx,
           figure.x,
@@ -112,7 +119,7 @@ const Canvas = observer(() => {
         );
         ctx.beginPath();
         break;
-      case 'line':
+      case "line":
         Line.staticDraw(
           ctx,
           figure.x,
@@ -124,7 +131,7 @@ const Canvas = observer(() => {
         );
         ctx.beginPath();
         break;
-      case 'eraser':
+      case "eraser":
         Eraser.draw(ctx, figure.x, figure.y, figure.lineWidth);
         break;
       default:
@@ -137,7 +144,7 @@ const Canvas = observer(() => {
 
   const onMouseUpHandler = () => {
     axios
-      .post(`http://localhost:5000/image?id=${params.id}`, {
+      .post(`http://localhost:${process.env.PORT}/image?id=${params.id}`, {
         img: canvasRef.current.toDataURL(),
       })
       .then((res) => console.log(res.data));
