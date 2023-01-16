@@ -1,18 +1,20 @@
-import React, { useEffect, useState } from "react";
 import "./../styles/canvas.scss";
-import { observer } from "mobx-react-lite";
-import { useRef } from "react";
-import canvasState from "../store/canvasState";
-import toolState from "../store/toolState";
+
+import React, { useEffect, useState } from "react";
+
 import Brush from "../tools/Brush";
-import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
-import { useParams } from "react-router-dom";
+import Circle from "../tools/Circle";
+import Eraser from "../tools/Eraser";
+import Line from "../tools/Line";
+import Modal from "react-bootstrap/Modal";
 import Rect from "../tools/Rect";
 import axios from "axios";
-import Circle from "../tools/Circle";
-import Line from "../tools/Line";
-import Eraser from "../tools/Eraser";
+import canvasState from "../store/canvasState";
+import { observer } from "mobx-react-lite";
+import toolState from "../store/toolState";
+import { useParams } from "react-router-dom";
+import { useRef } from "react";
 
 const Canvas = observer(() => {
   const canvasRef = useRef();
@@ -22,32 +24,25 @@ const Canvas = observer(() => {
   useEffect(() => {
     canvasState.setCanvas(canvasRef.current);
     let ctx = canvasRef.current.getContext("2d");
-    axios
-      .get(`http://localhost:${process.env.PORT}/image?id=${params.id}`)
-      .then((res) => {
-        const img = new Image();
-        img.src = res.data;
-        img.onload = () => {
-          ctx.clearRect(
-            0,
-            0,
-            canvasRef.current.width,
-            canvasRef.current.height
-          );
-          ctx.drawImage(
-            img,
-            0,
-            0,
-            canvasRef.current.width,
-            canvasRef.current.height
-          );
-        };
-      });
+    axios.get(`http://localhost:5000/image?id=${params.id}`).then((res) => {
+      const img = new Image();
+      img.src = res.data;
+      img.onload = () => {
+        ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+        ctx.drawImage(
+          img,
+          0,
+          0,
+          canvasRef.current.width,
+          canvasRef.current.height
+        );
+      };
+    });
   }, []);
 
   useEffect(() => {
     if (canvasState.username) {
-      const socket = new WebSocket(`ws://localhost:${process.env.PORT}/`);
+      const socket = new WebSocket("ws://localhost:5000/");
       canvasState.setSocket(socket);
       canvasState.setSessionId(params.id);
       toolState.setTool(new Brush(canvasRef.current, socket, params.id));
@@ -144,7 +139,7 @@ const Canvas = observer(() => {
 
   const onMouseUpHandler = () => {
     axios
-      .post(`http://localhost:${process.env.PORT}/image?id=${params.id}`, {
+      .post(`http://localhost:5000/image?id=${params.id}`, {
         img: canvasRef.current.toDataURL(),
       })
       .then((res) => console.log(res.data));
