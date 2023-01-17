@@ -25,7 +25,9 @@ const Canvas = observer(() => {
     canvasState.setCanvas(canvasRef.current);
     let ctx = canvasRef.current.getContext("2d");
     axios
-      .get(`${window.location.protocol}//localhost:5000/image?id=${params.id}`)
+      .get(
+        `${window.location.protocol}//${process.env.REACT_APP_BASE_URL}:5000/image?id=${params.id}`
+      )
       .then((response) => {
         console.log(response);
         if (response.data) {
