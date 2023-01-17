@@ -25,7 +25,7 @@ const Canvas = observer(() => {
     canvasState.setCanvas(canvasRef.current);
     let ctx = canvasRef.current.getContext("2d");
     axios
-      .get(`http://localhost:5000/image?id=${params.id}`)
+      .get(`${window.location.protocol}//localhost:5000/image?id=${params.id}`)
       .then((response) => {
         console.log(response);
         if (response.data) {
@@ -53,7 +53,9 @@ const Canvas = observer(() => {
   useEffect(() => {
     if (canvasState.username) {
       const socket = new WebSocket(
-        `ws://${process.env.REACT_APP_BASE_URL}:5000/`
+        `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${
+          process.env.REACT_APP_BASE_URL
+        }:5000/`
       );
       canvasState.setSocket(socket);
       canvasState.setSessionId(params.id);
@@ -152,7 +154,7 @@ const Canvas = observer(() => {
   const onMouseUpHandler = () => {
     axios
       .post(
-        `http://${process.env.REACT_APP_BASE_URL}:5000/image?id=${params.id}`,
+        `${window.location.protocol}//${process.env.REACT_APP_BASE_URL}:5000/image?id=${params.id}`,
         {
           img: canvasRef.current.toDataURL(),
         }
