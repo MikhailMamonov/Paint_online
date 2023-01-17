@@ -27,11 +27,13 @@ app.ws("/", (ws, req) => {
 
 app.get("/image", (req, res) => {
   try {
-    const file = fs.readFileSync(
-      path.resolve(__dirname, "files", `${req.query.id}.jpg`)
-    );
-    const data = `data:image/png;base64,` + file.toString("base64");
-    res.json(data);
+    const filePath = path.resolve(__dirname, "files", `${req.query.id}.jpg`);
+    if (fs.existsSync(filePath)) {
+      const file = fs.readFileSync(filePath);
+      const data = `data:image/png;base64,` + file.toString("base64");
+      return res.json(data);
+    }
+    return res.status(200);
   } catch (error) {
     console.log(error);
     return res.status(500).json("error");

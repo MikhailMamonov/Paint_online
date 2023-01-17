@@ -24,25 +24,37 @@ const Canvas = observer(() => {
   useEffect(() => {
     canvasState.setCanvas(canvasRef.current);
     let ctx = canvasRef.current.getContext("2d");
-    axios.get(`http://localhost:5000/image?id=${params.id}`).then((res) => {
-      const img = new Image();
-      img.src = res.data;
-      img.onload = () => {
-        ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-        ctx.drawImage(
-          img,
-          0,
-          0,
-          canvasRef.current.width,
-          canvasRef.current.height
-        );
-      };
-    });
+    axios
+      .get(`http://localhost:5000/image?id=${params.id}`)
+      .then((response) => {
+        console.log(response);
+        if (response.data) {
+          const img = new Image();
+          img.src = response.data;
+          img.onload = () => {
+            ctx.clearRect(
+              0,
+              0,
+              canvasRef.current.width,
+              canvasRef.current.height
+            );
+            ctx.drawImage(
+              img,
+              0,
+              0,
+              canvasRef.current.width,
+              canvasRef.current.height
+            );
+          };
+        }
+      });
   }, []);
 
   useEffect(() => {
     if (canvasState.username) {
-      const socket = new WebSocket("ws://localhost:5000/");
+      const socket = new WebSocket(
+        `ws://${process.env.REACT_APP_BASE_URL}:5000/`
+      );
       canvasState.setSocket(socket);
       canvasState.setSessionId(params.id);
       toolState.setTool(new Brush(canvasRef.current, socket, params.id));
@@ -139,9 +151,12 @@ const Canvas = observer(() => {
 
   const onMouseUpHandler = () => {
     axios
-      .post(`http://localhost:5000/image?id=${params.id}`, {
-        img: canvasRef.current.toDataURL(),
-      })
+      .post(
+        `http://${process.env.REACT_APP_BASE_URL}:5000/image?id=${params.id}`,
+        {
+          img: canvasRef.current.toDataURL(),
+        }
+      )
       .then((res) => console.log(res.data));
   };
   const connectHandler = () => {
